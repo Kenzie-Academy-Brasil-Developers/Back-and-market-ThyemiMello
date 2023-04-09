@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import market from "./database";
-import { ICleningProduct, IFoodProduct } from "./interfaces";
+import { IProduct } from "./interfaces";
 
 const ensureProductsMiddleware = (
   request: Request,
@@ -30,16 +30,24 @@ const ensureExistProducts = (
   response: Response,
   next: NextFunction
 ): Response | void => {
-  const productData: Array<ICleningProduct | IFoodProduct> = request.body
- 
-  const productRepit = productData.some((newProduct) =>
-    market.some((productExist) => productExist.name === newProduct.name)
-  );
+  const productRequest: Array<IProduct> | IProduct = request.body;
+  let itIsDuplicated = false;
 
-  if (productRepit) {
-    return response.status(409).json({
-      error: "Product already registered",
+  if(request.method === 'POST' ){
+    (productRequest as Array<IProduct>).forEach(product => {
+      market.forEach(productMarket => {
+        if(product.name === productMarket.name){
+          itIsDuplicated = true;
+        }
+      })
     });
+
+  } else if(request.method === 'PATCH'){
+    itIsDuplicated = market.some(product => product.name === (productRequest as IProduct).name);
+  }
+  
+  if(itIsDuplicated){
+    return response.status(409).json({error: "Product already registered"});
   }
 
   return next();

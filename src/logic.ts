@@ -6,12 +6,13 @@ let id = 1;
 
 const createProduct = (request: Request, response: Response): Response => {
   const productData: Array<ICleningProduct | IFoodProduct> = request.body;
+  const dateIn365Days = new Date(new Date().setDate(new Date().getDate() + 365));
 
   const allProduct = productData.map((product) => {
     const newProduct: IProduct = {
       id: id++,
       ...product,
-      expirationDate: new Date(),
+      expirationDate: dateIn365Days,
     };
 
     market.push(newProduct);
@@ -59,17 +60,28 @@ const listAllProducts = (request: Request, response: Response): Response => {
   return response.json(returnProduct);
 };
 
+
 const retriveProduct = (request: Request, response: Response): Response => {
-  const id = parseInt(request.params.id);
+  const indexProduct = response.locals.market.indexProduct;
+  const product = market[indexProduct];
+  const teste = {
+    ...product,
+    expirationDate: product.expirationDate.toISOString(),
+  };
 
-  const findIndex = market.findIndex((mark) => mark.id === id);
+  return response.status(200).json(teste);
+}
 
-  return response.json(market[findIndex]);
-};
 
 const updateProduct = (request: Request, response: Response): Response => {
-  const index = response.locals.product.indexChocolate;
+  const index = Number(response.locals.product.index);
   const updateData = request.body;
+
+  for(const key in updateData){
+    if(key === 'id' || key === 'expirationDate'){
+      delete updateData[key];
+    }
+  }  
 
   market[index] = {
     ...market[index],

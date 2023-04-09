@@ -14,7 +14,7 @@ app.use(express.json());
 app.post("/products", ensureExistProducts, createProduct);
 app.get("/products", listAllProducts);
 app.get("/products/:id", ensureProductsMiddleware, retriveProduct);
-app.patch("/products/:id", ensureProductsMiddleware, updateProduct);
+app.patch("/products/:id", ensureProductsMiddleware, ensureExistProducts, updateProduct);
 app.delete("/products/:id", ensureProductsMiddleware, deleteProduct);
 
 app.listen(3000, () => {
